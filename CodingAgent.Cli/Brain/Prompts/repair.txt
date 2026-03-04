@@ -1,0 +1,35 @@
+REPAIR REQUEST:
+Your previous response was rejected because it violated the protocol.
+
+ERROR:
+{{ERROR}}
+
+INVALID OUTPUT (verbatim):
+{{INVALID_OUTPUT}}
+
+You must now output EXACTLY ONE valid JSON object matching the schema:
+{
+  "message": "string",
+  "done": false,
+  "call": {
+    "tool": "list|read|write|patch|delete|move|search|exec",
+    "...": "tool-specific fields"
+  }
+}
+OR if complete:
+{
+  "message": "string",
+  "done": true,
+  "call": null
+}
+
+No markdown. No extra text. One JSON object only.
+
+WORKSPACE LISTING:
+{{WORKSPACE_LISTING}}
+
+LAST TOOL RESULT:
+{{LAST_TOOL_RESULT}}
+
+TASK:
+{{USER_INSTRUCTION}}
