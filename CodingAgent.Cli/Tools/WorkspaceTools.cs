@@ -85,6 +85,19 @@ public sealed class WorkspaceTools
 		throw new FileNotFoundException("Source file or directory not found.", absSrc);
 	}
 
+	public void Copy(string src, string dst)
+	{
+		var absSrc = SafeResolve(src);
+		var absDst = SafeResolve(dst);
+
+		if (!File.Exists(absSrc))
+			throw new FileNotFoundException("Source file not found.", absSrc);
+
+		Directory.CreateDirectory(Path.GetDirectoryName(absDst)!);
+
+		File.Copy(absSrc, absDst, overwrite: true);
+	}
+
 	/// <summary>
 	/// Minimal patch format (safe + easy for LLM):
 	/// PATCH v1
@@ -119,6 +132,12 @@ public sealed class WorkspaceTools
 		}
 
 		File.WriteAllText(abs, updated, Encoding.UTF8);
+	}
+
+	public void Mkdir(string path)
+	{
+		var abs = SafeResolve(path);
+		Directory.CreateDirectory(abs);
 	}
 
 	private static void ParsePatchV1(string patchText, out string oldBlock, out string newBlock)

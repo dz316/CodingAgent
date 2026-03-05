@@ -22,14 +22,27 @@ public sealed class ToolCall
 	public string? Command { get; set; }
 	public string[]? Args { get; set; }
 	public int TimeoutSec { get; set; } = 30;
-	public string? WorkingDir { get; set; }
+	public string? WorkingDir { get; set; } // relative to workspace
 }
 
-public sealed class AgentStep
+public sealed class AgentMessage
 {
 	public string Message { get; set; } = "";
 	public bool Done { get; set; } = false;
 
-	// At most ONE call. If Done=true, Call should be null.
+	// For “done” messages this may be null.
 	public ToolCall? Call { get; set; }
+}
+
+/// <summary>
+/// Model output can be either:
+/// - a single AgentMessage
+/// - an array of AgentMessage
+/// - an envelope: { "messages": [ ... ] }
+/// - multiple concatenated AgentMessage objects
+/// We normalize into AgentBatch.
+/// </summary>
+public sealed class AgentBatch
+{
+	public List<AgentMessage> Messages { get; set; } = new();
 }

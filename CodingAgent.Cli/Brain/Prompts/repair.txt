@@ -1,5 +1,5 @@
 REPAIR REQUEST:
-Your previous response was rejected because it violated the protocol.
+Your previous response was rejected because it violated the output protocol.
 
 ERROR:
 {{ERROR}}
@@ -7,7 +7,26 @@ ERROR:
 INVALID OUTPUT (verbatim):
 {{INVALID_OUTPUT}}
 
-You must now output EXACTLY ONE valid JSON object matching the schema:
+You must now return EXACTLY ONE valid JSON value and NOTHING ELSE (no markdown, no extra text).
+Do NOT return multiple JSON objects back-to-back like: {...}{...}
+
+The JSON MUST be either:
+
+A) Preferred (multi-message envelope):
+{
+  "messages": [
+    {
+      "message": "string",
+      "done": false,
+      "call": {
+        "tool": "list|read|write|patch|delete|move|search|exec",
+        "...": "tool-specific fields"
+      }
+    }
+  ]
+}
+
+B) Allowed (single message object):
 {
   "message": "string",
   "done": false,
@@ -16,17 +35,31 @@ You must now output EXACTLY ONE valid JSON object matching the schema:
     "...": "tool-specific fields"
   }
 }
-OR if complete:
+
+OR if complete (still ONE JSON value):
+
+A) Envelope done:
+{
+  "messages": [
+    {
+      "message": "string",
+      "done": true,
+      "call": null
+    }
+  ]
+}
+
+B) Single done:
 {
   "message": "string",
   "done": true,
   "call": null
 }
 
-No markdown. No extra text. One JSON object only.
-
-WORKSPACE LISTING:
-{{WORKSPACE_LISTING}}
+Remember:
+- Each message may contain AT MOST ONE tool call.
+- Only include multiple messages if actions are independent and safe to run in parallel.
+- Do not include multiple messages if the same tool repeats, the same file path is targeted more than once, or any call is exec.
 
 LAST TOOL RESULT:
 {{LAST_TOOL_RESULT}}
