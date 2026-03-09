@@ -28,7 +28,7 @@ public sealed class AgentLoop
 		for (int stepNo = 1; stepNo <= maxSteps; stepNo++)
 		{
 			var listing = _ws.List(".");
-			var batch = await _brain.DecideAsync(instruction, listing, lastToolResult);
+			var batch = await _brain.DecideAsync(instruction, lastToolResult);
 
 			// Print agent messages
 			foreach (var m in batch.Messages)
@@ -49,6 +49,7 @@ public sealed class AgentLoop
 
 			// Decide scheduling per your rules
 			bool hasConflict = HasConflict(calls);
+			hasConflict = false;
 
 			List<string> results;
 			if (hasConflict)

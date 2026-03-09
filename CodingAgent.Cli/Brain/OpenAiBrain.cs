@@ -51,16 +51,14 @@ public sealed class OpenAiBrain
 
 	public async Task<AgentBatch> DecideAsync(
 		string userInstruction,
-		string workspaceListing,
 		string lastToolResult)
 	{
 		string? lastInvalidOutput = null;
 		string? lastError = null;
-
+		IList<MessageResponseItem> responseItems = new List<MessageResponseItem>();
+		responseItems.Add(ResponseItem.CreateUserMessageItem(SystemPrompt.Value));
 		for (int attempt = 1; attempt <= 2; attempt++)
 		{
-			var system = SystemPrompt.Value;
-
 			var userPayload = attempt == 1
 				? Render(UserTemplate.Value, new Dictionary<string, string>
 				{
@@ -75,10 +73,12 @@ public sealed class OpenAiBrain
 					["USER_INSTRUCTION"] = userInstruction
 				});
 
-			var fullPrompt = $"SYSTEM:\n{system}\n\nUSER:\n{userPayload}\n";
+			//var fullPrompt = $"SYSTEM:\n{system}\n\nUSER:\n{userPayload}\n";
 			_logger.LogBlock($"MODEL INPUT (ATTEMPT {attempt})", userPayload);
 
-			var text = await CallModelAsync(fullPrompt);
+			responseItems.Add(ResponseItem.CreateUserMessageItem(userPayload));
+			var text = await CallModelAsync(responseItems);
+			responseItems.Add(ResponseItem.CreateAssistantMessageItem(text));
 
 			_logger.LogBlock($"MODEL RESPONSE (ATTEMPT {attempt})", text);
 
@@ -109,10 +109,14 @@ public sealed class OpenAiBrain
 		throw new InvalidOperationException("Unreachable: DecideAsync retry loop exhausted unexpectedly.");
 	}
 
-	private async Task<string> CallModelAsync(string fullPrompt)
+	private async Task<string> CallModelAsync(IList<MessageResponseItem> responseItems)
 	{
 		var options = new CreateResponseOptions { Model = _model };
-		options.InputItems.Add(ResponseItem.CreateUserMessageItem(fullPrompt));
+
+		foreach (var item in responseItems)
+		{
+			options.InputItems.Add(item);    //.Add(ResponseItem.CreateUserMessageItem(fullPrompt));
+		}
 
 		ResponseResult response = await _client.CreateResponseAsync(options);
 		return (response.GetOutputText() ?? "").Trim();
